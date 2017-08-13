@@ -1,18 +1,19 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-<title>Node js</title>
-<meta charset="UTF-8">
-
 </head>
-<html>
+<title>{{title}</title>
     <body>
-        {{#each users as |user|}}
-        <div>
-            <img src="/profilepics/{{user.username}}_sm.jpg" alt="">
-            <a href="/{{user.username}}">{{user.name.full}}</a>
-        </div>
-        {{/each}}
+        {{#block "header"}}
+            <h1>Header</h1>
+        {{/block}}
+ 
+        {{#block "main"}}
+            <p>Main Content.</p>
+        {{/block}}
+ 
+        {{#block "footer"}}
+            <p>&copy; 1999</p>
+        {{/block}}
     </body>
 </html>
