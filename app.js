@@ -1,20 +1,25 @@
-const express = require('express');
-const app = express();
-const favicon = require('serve-favicon'),
-const handlebars = require('handlebars'),
-const layouts = require('handlebars-layouts');
-
-const JSONStream = require('JSONStream');
-var engines = require('consolidate');
-db = require('./model/db'),
-app.engine('hbs',engines.handlebars);
-app.set('views', './views');
-app.set('view engine', 'hbs');
-
-handlebars.registerHelper(layouts(handlebars));
-app.use(express.static(__dirname + '/public'));
-app.use('/profilepics', express.static('images'))
-
-app.use(require('./controllers'))
-
-app.listen(3000,()=>{console.log("App running at port 3000");})
+var express = require('express'),
+  bodyParser = require('body-parser'),
+  router = express.Router(),
+   mongoose = require('mongoose');
+var app = express();
+var exphbs = require('express-handlebars');
+var path = require('path');
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ "extended": false }));
+app.set('views', path.join(__dirname, '/views'));
+app.engine('handlebars', exphbs({ defaultLayout: 'layout' }));
+app.set('view engine', 'handlebars');
+app.use(express.static(__dirname + '/public'))
+app.use(require('./Controllers'))
+mongoose.connect('mongodb://localhost:27017/Users', function (err) {
+  if (err) {
+    console.log('Unable to connect to Mongo.')
+    process.exit(1)
+  } else {
+    var db = mongoose.connection;
+    app.listen(3000, function () {
+      console.log('Listening on port 3000...')
+    })
+  }
+})

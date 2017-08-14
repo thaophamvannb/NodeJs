@@ -1,68 +1,131 @@
 // grab the things we need
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
-
-// create a schema
-var userSchema = new Schema({
-  name: String,
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  passwordconf: { type: String, required: true },
-  admin: Boolean,
-  gender:String,
-  email: String,
-  location: String,
-  created: Date,
-  updated: Date
-});
-
-// the schema is useless so far
-// we need to create a model using it
-var User = mongoose.model('User', userSchema);
-
-// make this available to our users in our Node applications
-module.exports = User;
-
-// on every save, add the date
-userSchema.pre('save', function(next) {
-  // get the current date
-  var currentDate = new Date();
-  // change the updated field to current date
-  this.updated = currentDate;
-  // if created doesn't exist, add to that field
-  if (!this.created)
-    this.created = currentDate;
-  next();
-});
-//crud
-module.exports = {
-    // ----------------------add user ------------------------
-    addUser: function (req, res) {
-        const name = req.body.name;
-        const username = req.body.username;
-        const password = req.body.password;
-        const passwordconf = req.body.passworconf;
-        const admin = req.body.admin;
-        const gender = req.body.gender;
-        const email = req.body.email;
-        const location = req.body.email;
-        var newUser  = User({
-            name: name,
-            username: username,
-            password: password,
-            passwordconf: passwordconf,
-            admin: admin,
-            gender: gender,
-            email: email,
-            location: location
-        });
-       
-        newUser.save(function (err) {
-            if (err) {
-                throw err;
-            } else {
-                console.log("User create:" + dbUser);
-            }
-        });
+var userSchema = mongoose.Schema({
+    name : {
+        type : String,
+        index : true
     },
+    username : {
+        type : String,
+        index: true
+    },
+    password : {
+        type : String
+    },
+    email : {
+        type : String
+    },
+    gender : {
+        type : String
+    },
+    location : {
+        type : String
+    },
+    created : {
+       type: Date,
+		"default": Date.now
+    },
+    updated : {
+        type: Date,
+		"default": Date.now
+    }
+
+})
+var user = module.exports = mongoose.model('user',userSchema);
+// // on every save, add the date
+// userSchema.pre('save', function(next) {
+//   // get the current date
+//   var currentDate = new Date();
+//   // change the updated field to current date
+//   this.updated = currentDate;
+//   // if created doesn't exist, add to that field
+//   if (!this.created)
+//     this.created = currentDate;
+//   next();
+// });
+
+module.exports = {
+    addUser : function(req,res){
+        var response = {};
+        var userData = new user();
+        userData.name = req.body.name;
+        userData.username = req.body.username;
+        userData.password = req.body.password;
+        userData.email = req.body.email;
+        userData.gender = req.body.gender;
+        userData.location = req.body.location;
+        userData.created = new Date();
+        userData.updated = new Date();
+        userData.save(function(err){
+            if (err) {
+                response = { "error": true, "message": "Error adding data" };
+            } else {
+                res.redirect('/allUser');
+            }
+        })
+
+    },
+    getAllUser : function(req,res){
+        var response = {};
+        user.find(function(err,data){
+              if (err) {
+                response = { "error": true, "message": "Error fetching data" };
+            } else {
+                res.render('allUser', { user: data });
+            }
+        })
+    },
+    deleteUser : function(req,res){
+         var response = {};
+        user.findById(req.params.id, function (err) {
+            if (err) {
+                response = { "error": true, "message": "Error fetching data" };
+            } else {
+                user.remove({ _id: req.params.id }, function (err) {
+                    if (err) {
+                        response = { "error": true, "message": "Error deleting data" };
+                    } else {
+                        res.redirect('/allUser')
+                    }
+
+                })
+            }
+        })
+    },
+    getUserById : function(req,res){
+         var response = {};
+        user.findById({ _id: req.params.id }, function (err, data) {
+            if (err) {
+                response = { "error": true, "message": "Error fetching data" };
+            } else {
+                res.render('edituser', { user: data })
+            }
+
+        })
+    },
+    updateUser : function(req,res){
+        var response = {};
+        user.findById(req.params.id, function (err, dataUser) {
+            if (err) {
+                response = { "error": true, "message": "Error deleting data" };
+            } else {
+                dataUser.name = req.body.name;
+                dataUser.username = req.body.username;
+                dataUser.password = req.body.password;
+                dataUser.email = req.body.email;
+                dataUser.gender = req.body.gender;
+                dataUser.location = req.body.location;
+                dataUser.created = new Date();
+                dataUser.updated = new Date();
+                dataUser.save(function (err) {
+                    if (err) {
+                        response = { "error": true, "message": "Error deleting data" };
+                    } else {
+                        res.redirect('/allUser');
+                    }
+
+                })
+            }
+        })
+    }
 }
